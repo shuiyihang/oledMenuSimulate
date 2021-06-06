@@ -14,9 +14,14 @@
 /**显示菜单项开始的x位置**/
 #define TEXT_START_X    20
 
-#define TEXT_START_Y    65
+#define TEXT_START_Y    45
 /**显示字体的大小**/
 #define LIST_FONT_SIZE  20
 /**每一行之间的间隔**/
 #define FONT_GAP    35
+
+#define SELECT_WIDTH    30
+
+#define OLED_BCKCOLOR   #01000e
+#define OLED_FONTCOLOR  #99ffff
 #endif // CONFIG_H

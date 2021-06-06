@@ -31,8 +31,6 @@ public:
     void paintEvent(QPaintEvent *);
     void keyPressEvent(QKeyEvent *event);
 
-
-
     ManagerMenu mainMenu;
 
 

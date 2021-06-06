@@ -7,17 +7,6 @@
 #include "config.h"
 #include "QDebug"
 
-//定义开关的风格
-iconInfo_Typedef text_onoff = {
-    .on_icon = "开",
-    .off_icon = "关",
-};
-
-iconInfo_Typedef sign_onoff = {
-    .on_icon = "√",
-    .off_icon = " ",
-};
-
 
 
 Widget::Widget(QWidget *parent)
@@ -25,6 +14,8 @@ Widget::Widget(QWidget *parent)
     , ui(new Ui::Widget)
 {
     ui->setupUi(this);
+
+    mainMenu.paintDev = this;
 
     ViewInit();
 
@@ -64,9 +55,24 @@ void Widget::ViewStart()
 void Widget::paintEvent(QPaintEvent *)
 {
     QPainter painter(this);
-    QFont font = painter.font();
+    QFont font("Microsoft YaHei",10, 75);
+    QPen pen = painter.pen();
+
+    /**设置画笔**/
+    pen.setColor(QColor("#00fffc"));//QColor("#99ffff")
+    pen.setWidth(2);
+
+    /**设置背景色**/
+    QPalette palette(this->palette());
+    palette.setColor(QPalette::Background,QColor("#0b0b0b"));
+    this->setPalette(palette);
+
+
+    /**设置字体**/
     font.setPixelSize(LIST_FONT_SIZE);
     painter.setFont(font);
+    painter.setPen(pen);
+
 
 
     MenuItem_Typedef *pos;
@@ -87,6 +93,7 @@ void Widget::paintEvent(QPaintEvent *)
 
 void Widget::keyPressEvent(QKeyEvent *event)
 {
+    qDebug()<<QString("%1").arg(event->key());
     switch (event->key()) {
     case Qt::Key_Up:
         if(__get_node_type(mainMenu.menuHandle.cur_type) == NON_LEAF_SIGN)
@@ -107,11 +114,18 @@ void Widget::keyPressEvent(QKeyEvent *event)
         qDebug()<<"Down";
         break;
     case Qt::Key_Left:
+        mainMenu.enterExit_to_newPage(&mainMenu.menuHandle,RETURN_PAGE);
         qDebug()<<"left";
         break;
     case Qt::Key_Right:
+        mainMenu.enterExit_to_newPage(&mainMenu.menuHandle,ENTER_PAGE);
         qDebug()<<"right";
         break;
+    case Qt::Key_Return:
+        mainMenu.select_verify_deal(&mainMenu.menuHandle);
+        qDebug()<<"enter";
+        break;
+
     }
 
 }

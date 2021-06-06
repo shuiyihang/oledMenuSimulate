@@ -28,6 +28,8 @@ typedef void (*show_dir_page)(const MenuItem_Typedef *menu , QPainter &painter);
 
 typedef void (*show_leaf_page)( MenuItem_Typedef *leaf , QPainter &painter);
 
+typedef void (*modify_config)( MenuItem_Typedef *leaf);
+
 /**
  * TODO 
  * 简化处理函数的类型
@@ -53,6 +55,7 @@ typedef struct MenuItem
     union{
         show_dir_page   showMenu;
         show_leaf_page  endPageDeal;    //包括 显示静态/动态页面和全局配置修改后调用上一次刷新配置页面
+        modify_config   updataConfig;
     };
 }MenuItem_Typedef;
 

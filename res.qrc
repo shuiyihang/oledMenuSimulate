@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>image/select.png</file>
+        <file>image/on_oled.png</file>
+        <file>image/off_oled.png</file>
+    </qresource>
+</RCC>
