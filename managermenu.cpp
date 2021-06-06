@@ -19,7 +19,6 @@ ManagerMenu::~ManagerMenu()
 curHandle_Typedef ManagerMenu::menuHandle;
 /**菜单里的全局配置*/
 configSet_Typedef ManagerMenu::operat_config;
-QWidget * ManagerMenu::paintDev = NULL;
 
 
 //定义开关的风格
@@ -33,6 +32,7 @@ iconInfo_Typedef sign_onoff = {
     .off_icon = ":/image/off_oled.png",
 };
 
+/*秒表计时功能*/
 
 
 void ManagerMenu::MenuInit()
@@ -45,13 +45,13 @@ void ManagerMenu::MenuInit()
 
     //添加,翻页测试使用
     WifiNode = leafCreate(LEAF_OPEN, "WIFI",test_turn_page,NULL);//静态显示的
-    NotifyNode = leafCreate(LEAF_OPEN, "通知",test_turn_page,NULL);//静态显示的
+    NotifyNode = leafCreate(LEAF_OPEN_DYN, "时间",show_dynamic_time_page,NULL);//实时显示当前时间
     HotsportNode = leafCreate(LEAF_OPEN, "个人热点",test_turn_page,NULL);//静态显示的
     NoDisturbNode = leafCreate(LEAF_OPEN, "勿扰模式",test_turn_page,NULL);//静态显示的
     /////////////
 
     PhoneNode = leafCreate(LEAF_OPEN, "关于本机",test_turn_page,NULL);//静态显示的
-    TimeNode = leafCreate(LEAF_OPEN,"电量",battery_ring_page,NULL);//动态显示
+    TimeNode = leafCreate(LEAF_OPEN_DYN,"电量",battery_ring_page,NULL);//动态显示
 
     CorrectNode = branchCreate(NON_LEAF,"自动改正",simulate_show_option_icon);//增加开关控制节点
     oneHandleNode = branchCreate(NON_LEAF,"单手键盘",simulate_show_option_icon);//增加开关控制节点
@@ -409,10 +409,70 @@ void ManagerMenu::test_turn_page(MenuItem_Typedef *leaf, QPainter &painter)
 
 }
 
+void ManagerMenu::show_dynamic_time_page(MenuItem_Typedef *leaf, QPainter &painter)
+{
+    painter.save();
+    painter.drawText(QRectF(0,5,WIN_WIDTH,TITLE_Y), Qt::AlignCenter, leaf->briefInfo);
+    painter.drawLine(0,35,WIN_WIDTH,35);
+
+    QTime current = QTime::currentTime();
+    QFont font = painter.font();
+
+    font.setPixelSize(30);
+    painter.setFont(font);
+    painter.drawText(QRectF(0,2*TEXT_START_Y,WIN_WIDTH,FONT_GAP), Qt::AlignCenter, QString("[ %1:%2 ]").arg(current.hour()).arg(current.minute()));
+
+    painter.restore();
+
+}
+
 void ManagerMenu::battery_ring_page(MenuItem_Typedef *leaf, QPainter &painter)
 {
     /*显示电量圆环*/
+    QTime current = QTime::currentTime();
+    int radius = 50;//外圆半径
 
+    int padsize = 40;//内圆半径
+
+    int startAngle = 90;
+
+    operat_config.battery = current.minute();//为了测试使用
+    painter.save();
+
+    QRectF rect(20, 20, radius * 2, radius * 2);
+
+    double angleAll = 360.0;
+    double angleCurrent = angleAll * operat_config.battery / 100;
+    double angleOther = angleAll - angleCurrent;
+
+    QColor color("#00fffc");
+    QColor bgcolor("#0b0b0b");
+
+
+    painter.setBrush(color);
+    painter.drawPie(rect, (startAngle - angleCurrent) * 16, angleCurrent * 16);
+
+
+    painter.setBrush(bgcolor);
+    painter.drawPie(rect, (startAngle - angleCurrent - angleOther) * 16, angleOther * 16);
+
+    painter.drawEllipse(QRectF(20+radius-padsize,20+radius-padsize,padsize*2,padsize*2));
+
+
+
+
+
+
+
+    QFont font;
+    font.setPixelSize(25);
+    painter.setFont(font);
+
+    QRectF textRect(20+radius-padsize,20+radius-padsize,padsize*2,padsize*2);
+    QString strValue = QString("%1%").arg(operat_config.battery);
+
+    painter.drawText(textRect, Qt::AlignCenter, strValue);
+    painter.restore();
 
     qDebug()<<"ring display";
 

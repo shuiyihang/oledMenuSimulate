@@ -15,7 +15,6 @@ Widget::Widget(QWidget *parent)
 {
     ui->setupUi(this);
 
-    mainMenu.paintDev = this;
 
     ViewInit();
 
@@ -42,7 +41,7 @@ void Widget::ViewStart()
     connect(&view_Timer, &QTimer::timeout, [=](){
 
 
-        if(mainMenu.menuHandle.need_refresh){
+        if(mainMenu.menuHandle.need_refresh || mainMenu.menuHandle.cur_type & LEAF_DYN_ASSERT){
             mainMenu.menuHandle.need_refresh = 0;
 
             update();

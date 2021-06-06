@@ -5,7 +5,7 @@
 #include "userPage.h"
 #include "stdarg.h"
 #include "progressring.h"
-
+#include "QTime"
 
 class ManagerMenu
 {
@@ -40,7 +40,7 @@ public:
     static void blueTooth_page_deal( MenuItem_Typedef *leaf);
     static void aboutPhone_page( MenuItem_Typedef *leaf);
     static void test_turn_page(MenuItem_Typedef *leaf , QPainter &painter);
-    static void show_dynamic_time_page(MenuItem_Typedef *leaf);
+    static void show_dynamic_time_page(MenuItem_Typedef *leaf , QPainter &painter);
     static void autoCorrct_page_deal( MenuItem_Typedef *leaf);
     static void oneHandle_page_deal( MenuItem_Typedef *leaf);
     static void glide_page_deal( MenuItem_Typedef *leaf);
@@ -54,7 +54,6 @@ public:
     /**菜单里的全局配置*/
     static configSet_Typedef operat_config;
 
-    static QWidget *paintDev;
 
     /**定义的树节点*/
     MenuItem_Typedef *rootNode;

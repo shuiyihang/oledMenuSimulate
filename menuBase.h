@@ -70,6 +70,8 @@ typedef struct MenuItem
 #define MULTI_LEAF_ASSERT   (1 << LEAF_MUTLI_BIT)
 #define CAN_ENTER_ASSERT    (3 << LEAF_TYPE_BIT)
 
+#define LEAF_DYN_ASSERT     (1)
+
 
 /**
  * 位值代表
@@ -78,7 +80,8 @@ typedef struct MenuItem
 
 typedef enum {
     NON_LEAF = 0x80,//非叶子节点
-    LEAF_OPEN = 0x40 ,//可以展开的叶子节点
+    LEAF_OPEN = 0x40 ,//可以展开的叶子节点，静态显示
+    LEAF_OPEN_DYN = 0x41,//可以展开的叶子节点，动态显示
     LEAF_CLOSE_MULTI_DISEN = 0x20,//不能展开的叶子节点, 支持多选, 默认状态是关
     LEAF_CLOSE_MULTI_EN = 0x30,//不能展开的叶子节点, 支持多选, 默认状态是开
     LEAF_CLOSE_NOMULTI_DISEN = 0,//不能展开的叶子节点, 不支持多选, 默认状态是关
