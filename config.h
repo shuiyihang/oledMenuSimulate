@@ -24,4 +24,11 @@
 
 #define OLED_BCKCOLOR   #01000e
 #define OLED_FONTCOLOR  #99ffff
+
+#define LOGO_SET      ":/image/setting.png"
+#define LOGO_BLE      ":/image/bluetooth.png"
+#define LOGO_TIM      ":/image/timer.png"
+#define LOGO_BAT      ":/image/battery.png"
+
+
 #endif // CONFIG_H

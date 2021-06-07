@@ -23,8 +23,8 @@ public:
     u8_t get_uplist_from_curlisthead(curHandle_Typedef *handle);
     void select_verify_deal(curHandle_Typedef *handle);
     void enterExit_to_newPage(curHandle_Typedef *handle, u8_t mode);
-    MenuItem_Typedef* branchCreate(NODE_TYPE nodeType , const char *text, show_dir_page cb);
-    MenuItem_Typedef* leafCreate(NODE_TYPE nodeType, const char *text, show_leaf_page cb , iconInfo_Typedef *argIcon);
+    MenuItem_Typedef* branchCreate(NODE_TYPE nodeType , const char *text, show_dir_page cb,const char* logo);
+    MenuItem_Typedef* leafCreate(NODE_TYPE nodeType, const char *text, show_leaf_page cb , iconInfo_Typedef *argIcon, const char* logo);
     MenuItem_Typedef* SpecialleafCreate(NODE_TYPE nodeType, const char *text, modify_config cb, iconInfo_Typedef *argIcon);
     void free_branch_auto(MenuItem_Typedef* non_lef);
     void currentHandleInit(MenuItem_Typedef * root, curHandle_Typedef *handle);
@@ -36,6 +36,8 @@ public:
 
     /**非核心，仅显示使用**/
     static void simulate_show_list_page(const MenuItem_Typedef *menu , QPainter &painter);
+    static void simulate_main_logo_page(const MenuItem_Typedef *menu , QPainter &painter);//左右滚动带logo的主界面
+
     static void simulate_show_option_icon(const MenuItem_Typedef *menu, QPainter &painter);
     static void blueTooth_page_deal( MenuItem_Typedef *leaf);
     static void aboutPhone_page( MenuItem_Typedef *leaf);

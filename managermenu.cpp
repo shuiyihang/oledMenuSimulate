@@ -11,7 +11,7 @@ ManagerMenu::ManagerMenu()
 
 ManagerMenu::~ManagerMenu()
 {
-    free_branch_auto(rootNode);
+    free_branch_auto(UniversalNode);
 }
 
 
@@ -37,25 +37,30 @@ iconInfo_Typedef sign_onoff = {
 
 void ManagerMenu::MenuInit()
 {
-    rootNode = branchCreate(NON_LEAF,"设置",simulate_show_list_page);
-    UniversalNode = branchCreate(NON_LEAF,"通用",simulate_show_list_page);
-    KeyNode = branchCreate(NON_LEAF,"键盘",simulate_show_list_page);
 
-    BluetoothNode = branchCreate(NON_LEAF,"蓝牙",simulate_show_option_icon);//增加蓝牙开关控制节点
+    UniversalNode = branchCreate(NON_LEAF,"通用",simulate_main_logo_page,NULL);
+
+    rootNode = branchCreate(NON_LEAF,"设置",simulate_show_list_page,LOGO_SET);
+    BluetoothNode = branchCreate(NON_LEAF,"蓝牙",simulate_show_option_icon,LOGO_BLE);//增加蓝牙开关控制节点
+    NotifyNode = leafCreate(LEAF_OPEN_DYN, "时间",show_dynamic_time_page,NULL,LOGO_TIM);//实时显示当前时间
+    TimeNode = leafCreate(LEAF_OPEN_DYN,"电量",battery_ring_page,NULL,LOGO_BAT);//动态显示
+
+
+    KeyNode = branchCreate(NON_LEAF,"键盘",simulate_show_list_page,NULL);
 
     //添加,翻页测试使用
-    WifiNode = leafCreate(LEAF_OPEN, "WIFI",test_turn_page,NULL);//静态显示的
-    NotifyNode = leafCreate(LEAF_OPEN_DYN, "时间",show_dynamic_time_page,NULL);//实时显示当前时间
-    HotsportNode = leafCreate(LEAF_OPEN, "个人热点",test_turn_page,NULL);//静态显示的
-    NoDisturbNode = leafCreate(LEAF_OPEN, "勿扰模式",test_turn_page,NULL);//静态显示的
+    WifiNode = leafCreate(LEAF_OPEN, "WIFI",test_turn_page,NULL,NULL);//静态显示的
+
+    HotsportNode = leafCreate(LEAF_OPEN, "个人热点",test_turn_page,NULL,NULL);//静态显示的
+    NoDisturbNode = leafCreate(LEAF_OPEN, "勿扰模式",test_turn_page,NULL,NULL);//静态显示的
     /////////////
 
-    PhoneNode = leafCreate(LEAF_OPEN, "关于本机",test_turn_page,NULL);//静态显示的
-    TimeNode = leafCreate(LEAF_OPEN_DYN,"电量",battery_ring_page,NULL);//动态显示
+    PhoneNode = leafCreate(LEAF_OPEN, "关于本机",test_turn_page,NULL,NULL);//静态显示的
 
-    CorrectNode = branchCreate(NON_LEAF,"自动改正",simulate_show_option_icon);//增加开关控制节点
-    oneHandleNode = branchCreate(NON_LEAF,"单手键盘",simulate_show_option_icon);//增加开关控制节点
-    slideInputNode = branchCreate(NON_LEAF,"滑行键入",simulate_show_option_icon);
+
+    CorrectNode = branchCreate(NON_LEAF,"自动改正",simulate_show_option_icon,NULL);//增加开关控制节点
+    oneHandleNode = branchCreate(NON_LEAF,"单手键盘",simulate_show_option_icon,NULL);//增加开关控制节点
+    slideInputNode = branchCreate(NON_LEAF,"滑行键入",simulate_show_option_icon,NULL);
 
 
 
@@ -67,9 +72,9 @@ void ManagerMenu::MenuInit()
 //    oneHandleNode_2 = leafCreate(LEAF_CLOSE_NOMULTI_DISEN, "中",oneHandle_page_deal, NULL);
 //    oneHandleNode_3 = leafCreate(LEAF_CLOSE_NOMULTI_DISEN, "右",oneHandle_page_deal, NULL);
 
-    tree_node_binding_oneTime(7, rootNode,BluetoothNode,WifiNode,UniversalNode,NotifyNode,HotsportNode,NoDisturbNode,TimeNode);
+    tree_node_binding_oneTime(4, UniversalNode,rootNode,BluetoothNode,TimeNode,NotifyNode);
 
-    tree_node_binding_oneTime(2, UniversalNode,PhoneNode,KeyNode);
+    tree_node_binding_oneTime(5, rootNode,PhoneNode,KeyNode,WifiNode,HotsportNode,NoDisturbNode);
 
     tree_node_binding_oneTime(3, KeyNode,CorrectNode,
                                 oneHandleNode,slideInputNode);
@@ -80,8 +85,8 @@ void ManagerMenu::MenuInit()
 void ManagerMenu::currentHandleInit()
 {
     memset(&menuHandle,0,sizeof(curHandle_Typedef));
-    menuHandle.cur_list_head = &rootNode->localPos;
-    menuHandle.cur_type = rootNode->unitType;
+    menuHandle.cur_list_head = &UniversalNode->localPos;
+    menuHandle.cur_type = UniversalNode->unitType;
     menuHandle.chosse_cnt = get_menu_choose_cnt(&menuHandle);
     menuHandle.need_refresh = 1;
 
@@ -204,7 +209,7 @@ void ManagerMenu::enterExit_to_newPage(curHandle_Typedef *handle, u8_t mode)
     }
 }
 
-MenuItem_Typedef *ManagerMenu::branchCreate(NODE_TYPE nodeType, const char *text, show_dir_page cb)
+MenuItem_Typedef *ManagerMenu::branchCreate(NODE_TYPE nodeType, const char *text, show_dir_page cb,const char* logo)
 {
     MenuItem_Typedef* non_leaf = (MenuItem_Typedef*)malloc(sizeof(MenuItem_Typedef));
     if(non_leaf == NULL){
@@ -214,12 +219,13 @@ MenuItem_Typedef *ManagerMenu::branchCreate(NODE_TYPE nodeType, const char *text
     non_leaf->briefInfo = text;
     non_leaf->unitType = nodeType;
     non_leaf->showMenu = cb;
+    non_leaf->logo = logo;
 
     return non_leaf;
 
 }
 
-MenuItem_Typedef *ManagerMenu::leafCreate(NODE_TYPE nodeType, const char *text, show_leaf_page cb, iconInfo_Typedef *argIcon)
+MenuItem_Typedef *ManagerMenu::leafCreate(NODE_TYPE nodeType, const char *text, show_leaf_page cb, iconInfo_Typedef *argIcon, const char* logo)
 {
     MenuItem_Typedef* leaf = (MenuItem_Typedef*)malloc(sizeof(MenuItem_Typedef));
     if(leaf == NULL){
@@ -231,6 +237,8 @@ MenuItem_Typedef *ManagerMenu::leafCreate(NODE_TYPE nodeType, const char *text, 
     leaf->briefInfo = text;
 
     leaf->endPageDeal = cb;
+
+    leaf->logo = logo;
 
     if(argIcon){
         if(nodeType&LEAF_INIT_STATE){
@@ -357,6 +365,26 @@ void ManagerMenu::simulate_show_list_page(const MenuItem_Typedef *menu, QPainter
             }
         }
         cnt++;
+    }
+
+}
+
+void ManagerMenu::simulate_main_logo_page(const MenuItem_Typedef *menu, QPainter &painter)
+{
+    const struct single_list_head *list_node = &menu->localPos;
+    MenuItem_Typedef *temp;
+    u8_t labelNum = 0;
+    /*画内容*/
+    single_list_for_each_entry(temp,list_node,brother)
+    {
+        if(labelNum == menuHandle.cursorPos){
+            /*显示对应的logo 和 文字 , 左右小箭头*/
+            painter.drawPixmap((WIN_WIDTH-100)*0.5,(WIN_HEIGHT-100)*0.5,100,100,QPixmap(temp->logo));
+            painter.drawText(QRectF((WIN_WIDTH-100)*0.5,(WIN_HEIGHT-100)*0.5+70,100,100), Qt::AlignCenter, temp->briefInfo);
+            break;
+        }
+
+        labelNum++;
     }
 
 }

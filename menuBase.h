@@ -47,6 +47,7 @@ typedef struct MenuItem
     s8_t selectNum;         //选中的条目序号
     s8_t cursorPos;         //光标位置
     const char *briefInfo;  //子菜单标题信息
+    const char *logo;
     const iconInfo_Typedef *icon;       //子菜单的图标信息
     const char *cur_icon;
     struct single_list_head  localPos;  //绑定子目录的头节点
