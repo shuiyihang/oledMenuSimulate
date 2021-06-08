@@ -350,6 +350,55 @@ void ManagerMenu::simulate_show_list_page(const MenuItem_Typedef *menu, QPainter
     painter.save();
     painter.drawText(QRectF(0,3,WIN_WIDTH,TITLE_Y), Qt::AlignCenter, menu->briefInfo);
     painter.drawLine(0,35,WIN_WIDTH,35);
+
+
+
+
+    //上下 各留9pixel
+    /*画滚动条*/
+    int start_x = WIN_WIDTH-SCROL_WIDTH;
+    int start_y = TITLE_Y+9;
+    painter.drawRect(start_x,start_y,SCROL_WIDTH,SCROL_HEIGHT-9);
+
+    //画上下三角，20*20
+    painter.drawPixmap(start_x+3,start_y+2,20,20,QPixmap(LOGO_ARROW_UP));
+    painter.drawPixmap(start_x+3,TITLE_Y+SCROL_HEIGHT-22,20,20,QPixmap(LOGO_ARROW_DOWN));
+
+    //画按钮边框
+    painter.drawLine(start_x,start_y+24,start_x+SCROL_WIDTH,start_y+24);//
+    painter.drawLine(start_x,TITLE_Y+SCROL_HEIGHT-24,start_x+SCROL_WIDTH,TITLE_Y+SCROL_HEIGHT-24);
+
+    //减去标题的高度是
+    int heightReal = SCROL_HEIGHT-18;//9pixel
+    int barReal = heightReal - 48;//减去三角和框27
+
+    int barLen;
+    int yOffset;
+    QColor color("#00fffc");
+
+    if(PAGE_NUMS > menuHandle.chosse_cnt){
+        barLen = barReal;
+    }else{
+        barLen = barReal*PAGE_NUMS/menuHandle.chosse_cnt;
+    }
+
+    int freeSpace = barReal - barLen;
+
+    if(PAGE_NUMS > menuHandle.chosse_cnt){
+        yOffset = 0;
+    }else{
+        yOffset = freeSpace*menuHandle.startItem/(menuHandle.chosse_cnt - PAGE_NUMS);
+    }
+    qDebug()<<"barreal:"<<barReal<<"barLen:"<<barLen<<"yOffset:"<<yOffset<<"chosse_cnt"<<menuHandle.chosse_cnt<<"freespace:"<<freeSpace;
+    qDebug()<<"startItem:"<<menuHandle.startItem;
+
+    painter.setBrush(color);
+    painter.drawRect(start_x+4,start_y+30+yOffset,SCROL_WIDTH-8,barLen);
+
+
+    //结束画滚动条
+
+
     painter.restore();
     /*画内容*/
     single_list_for_each_entry(temp,list_node,brother)

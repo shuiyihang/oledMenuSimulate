@@ -5,6 +5,10 @@
 #define WIN_WIDTH   384
 #define WIN_HEIGHT  189
 
+
+#define SCROL_WIDTH  26
+#define SCROL_HEIGHT 159
+
 /**刷新周期*/
 #define FRESH_INTERVAL  20
 
@@ -29,6 +33,9 @@
 #define LOGO_BLE      ":/image/bluetooth.png"
 #define LOGO_TIM      ":/image/timer.png"
 #define LOGO_BAT      ":/image/battery.png"
+
+#define LOGO_ARROW_UP   ":/image/arrow_up.png"
+#define LOGO_ARROW_DOWN ":/image/arrow_down.png"
 
 
 #endif // CONFIG_H
