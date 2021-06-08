@@ -31,12 +31,21 @@ public:
     void chooseCursorUp(curHandle_Typedef *handle);
     void chooseCursorDown(curHandle_Typedef *handle);
 
+    void bindParamInit(MenuItem_Typedef* node, void *bindParam);
+
+
+    static void configSetInit(configSet_Typedef* cfg);
 
 
 
+
+
+    static void updata_Binding_param(curHandle_Typedef *handle, u8_t rise);
     /**非核心，仅显示使用**/
     static void simulate_show_list_page(const MenuItem_Typedef *menu , QPainter &painter);
     static void simulate_main_logo_page(const MenuItem_Typedef *menu , QPainter &painter);//左右滚动带logo的主界面
+
+    static void simulate_edit_param_task(const MenuItem_Typedef *menu , QPainter &painter);
 
     static void simulate_show_option_icon(const MenuItem_Typedef *menu, QPainter &painter);
     static void blueTooth_page_deal( MenuItem_Typedef *leaf);
@@ -68,9 +77,11 @@ public:
     MenuItem_Typedef *oneHandleNode;
     MenuItem_Typedef *slideInputNode;
 
+    MenuItem_Typedef *P_param , *I_param , *D_param;
+
     MenuItem_Typedef *BluetoothNode_1, *CorrectNode_1, *slideInputNode_1, *oneHandleNode_1, *oneHandleNode_2, *oneHandleNode_3;
 
-    MenuItem_Typedef *NotifyNode, *HotsportNode, *NoDisturbNode, *WifiNode;
+    MenuItem_Typedef *NotifyNode, *HotsportNode, *NoDisturbNode, *PidNode;
 
 
 };

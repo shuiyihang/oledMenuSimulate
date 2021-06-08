@@ -42,20 +42,29 @@ void ManagerMenu::MenuInit()
 
     rootNode = branchCreate(NON_LEAF,"设置",simulate_show_list_page,LOGO_SET);
     BluetoothNode = branchCreate(NON_LEAF,"蓝牙",simulate_show_option_icon,LOGO_BLE);//增加蓝牙开关控制节点
-    NotifyNode = leafCreate(LEAF_OPEN_DYN, "时间",show_dynamic_time_page,NULL,LOGO_TIM);//实时显示当前时间
-    TimeNode = leafCreate(LEAF_OPEN_DYN,"电量",battery_ring_page,NULL,LOGO_BAT);//动态显示
+    NotifyNode = leafCreate(LEAF_OPEN_REFRESH, "时间",show_dynamic_time_page,NULL,LOGO_TIM);//实时显示当前时间
+    TimeNode = leafCreate(LEAF_OPEN_REFRESH,"电量",battery_ring_page,NULL,LOGO_BAT);//动态显示
 
 
     KeyNode = branchCreate(NON_LEAF,"键盘",simulate_show_list_page,NULL);
 
     //添加,翻页测试使用
-    WifiNode = leafCreate(LEAF_OPEN, "WIFI",test_turn_page,NULL,NULL);//静态显示的
+    PidNode = branchCreate(NON_LEAF_EDIT, "调参",simulate_edit_param_task,LOGO_PID);//静态显示的
 
-    HotsportNode = leafCreate(LEAF_OPEN, "个人热点",test_turn_page,NULL,NULL);//静态显示的
-    NoDisturbNode = leafCreate(LEAF_OPEN, "勿扰模式",test_turn_page,NULL,NULL);//静态显示的
+    P_param = leafCreate(LEAF_CLOSE_EDIT, "P:",test_turn_page,NULL,NULL);
+    I_param = leafCreate(LEAF_CLOSE_EDIT, "I:",test_turn_page,NULL,NULL);
+    D_param = leafCreate(LEAF_CLOSE_EDIT, "D:",test_turn_page,NULL,NULL);
+
+    bindParamInit(P_param,&operat_config.p_pid);
+    bindParamInit(I_param,&operat_config.i_pid);
+    bindParamInit(D_param,&operat_config.d_pid);
+
+
+    HotsportNode = leafCreate(LEAF_OPEN_REFRESH, "个人热点",test_turn_page,NULL,NULL);//静态显示的
+    NoDisturbNode = leafCreate(LEAF_OPEN_REFRESH, "勿扰模式",test_turn_page,NULL,NULL);//静态显示的
     /////////////
 
-    PhoneNode = leafCreate(LEAF_OPEN, "关于本机",test_turn_page,NULL,NULL);//静态显示的
+    PhoneNode = leafCreate(LEAF_OPEN_REFRESH, "关于本机",test_turn_page,NULL,NULL);//静态显示的
 
 
     CorrectNode = branchCreate(NON_LEAF,"自动改正",simulate_show_option_icon,NULL);//增加开关控制节点
@@ -65,16 +74,17 @@ void ManagerMenu::MenuInit()
 
 
 
-    BluetoothNode_1 = SpecialleafCreate(LEAF_CLOSE_MULTI_DISEN, "蓝牙",blueTooth_page_deal, &sign_onoff);//增加蓝牙开关控制节点
+    BluetoothNode_1 = SpecialleafCreate(LEAF_CLOSE_OFF, "蓝牙",blueTooth_page_deal, &sign_onoff);//增加蓝牙开关控制节点
 //    CorrectNode_1 = leafCreate(LEAF_CLOSE_MULTI_DISEN, "自动改正",autoCorrct_page_deal, NULL);
 //    slideInputNode_1 = leafCreate(LEAF_CLOSE_MULTI_DISEN, "滑行键入",glide_page_deal,NULL);
 //    oneHandleNode_1 = leafCreate(LEAF_CLOSE_NOMULTI_EN, "左",oneHandle_page_deal, NULL);
 //    oneHandleNode_2 = leafCreate(LEAF_CLOSE_NOMULTI_DISEN, "中",oneHandle_page_deal, NULL);
 //    oneHandleNode_3 = leafCreate(LEAF_CLOSE_NOMULTI_DISEN, "右",oneHandle_page_deal, NULL);
 
-    tree_node_binding_oneTime(4, UniversalNode,rootNode,BluetoothNode,TimeNode,NotifyNode);
+    tree_node_binding_oneTime(4, UniversalNode,rootNode,PidNode,BluetoothNode,TimeNode,NotifyNode);
 
-    tree_node_binding_oneTime(5, rootNode,PhoneNode,KeyNode,WifiNode,HotsportNode,NoDisturbNode);
+    tree_node_binding_oneTime(5, rootNode,PhoneNode,KeyNode,HotsportNode,NoDisturbNode);
+    tree_node_binding_oneTime(3, PidNode,P_param,I_param,D_param);
 
     tree_node_binding_oneTime(3, KeyNode,CorrectNode,
                                 oneHandleNode,slideInputNode);
@@ -340,6 +350,42 @@ void ManagerMenu::chooseCursorDown(curHandle_Typedef *handle)
     }
 }
 
+void ManagerMenu::bindParamInit(MenuItem_Typedef *node, void *bindParam)
+{
+    node->param = bindParam;
+}
+
+void ManagerMenu::configSetInit(configSet_Typedef *cfg)
+{
+    cfg->p_pid = 15;
+    cfg->i_pid = 10;
+    cfg->d_pid = 30;
+}
+
+void ManagerMenu::updata_Binding_param(curHandle_Typedef *handle, u8_t rise)
+{
+    MenuItem_Typedef *pos;
+    u8_t cnt = 0;
+    struct single_list_head *ptr = handle->cur_list_head;
+    single_list_for_each_entry(pos,ptr,brother)
+    {
+
+        if(cnt == handle->cur_choose){
+            if(rise){
+                (*(int *)pos->param)++;//参数应该转成什么类型用户是清楚的
+            }else{
+                if((*(int *)pos->param) > 0){
+                    (*(int *)pos->param)--;
+                }
+            }
+            break;
+        }
+        cnt++;
+    }
+
+    handle->need_refresh = 1;
+}
+
 void ManagerMenu::simulate_show_list_page(const MenuItem_Typedef *menu, QPainter &painter)
 {
     const struct single_list_head *list_node = &menu->localPos;
@@ -389,8 +435,8 @@ void ManagerMenu::simulate_show_list_page(const MenuItem_Typedef *menu, QPainter
     }else{
         yOffset = freeSpace*menuHandle.startItem/(menuHandle.chosse_cnt - PAGE_NUMS);
     }
-    qDebug()<<"barreal:"<<barReal<<"barLen:"<<barLen<<"yOffset:"<<yOffset<<"chosse_cnt"<<menuHandle.chosse_cnt<<"freespace:"<<freeSpace;
-    qDebug()<<"startItem:"<<menuHandle.startItem;
+//    qDebug()<<"barreal:"<<barReal<<"barLen:"<<barLen<<"yOffset:"<<yOffset<<"chosse_cnt"<<menuHandle.chosse_cnt<<"freespace:"<<freeSpace;
+//    qDebug()<<"startItem:"<<menuHandle.startItem;
 
     painter.setBrush(color);
     painter.drawRect(start_x+4,start_y+30+yOffset,SCROL_WIDTH-8,barLen);
@@ -434,6 +480,36 @@ void ManagerMenu::simulate_main_logo_page(const MenuItem_Typedef *menu, QPainter
         }
 
         labelNum++;
+    }
+
+}
+
+void ManagerMenu::simulate_edit_param_task(const MenuItem_Typedef *menu, QPainter &painter)
+{
+    const struct single_list_head *list_node = &menu->localPos;
+    MenuItem_Typedef *temp;
+    u8_t cnt = 0;
+
+    /*画标题*/
+    painter.save();
+
+    if(menuHandle.edit_mode){
+        painter.drawText(QRectF(0,3,WIN_WIDTH,TITLE_Y), Qt::AlignCenter, QString(menu->briefInfo)+"(编辑模式)");
+    }else{
+        painter.drawText(QRectF(0,3,WIN_WIDTH,TITLE_Y), Qt::AlignCenter, menu->briefInfo);
+    }
+
+    painter.drawLine(0,35,WIN_WIDTH,35);
+
+
+    single_list_for_each_entry(temp,list_node,brother)
+    {
+        if(cnt == menuHandle.cursorPos){
+            painter.drawPixmap(50,TEXT_START_Y+FONT_GAP*cnt,30,30,QPixmap(":/image/select.png"));
+        }
+        painter.drawText(QRectF(0,TEXT_START_Y+FONT_GAP*cnt,WIN_WIDTH,FONT_GAP), Qt::AlignCenter, QString(temp->briefInfo)+QString("        %1").arg((*(int *)temp->param)));
+
+        cnt++;
     }
 
 }
@@ -509,14 +585,15 @@ void ManagerMenu::battery_ring_page(MenuItem_Typedef *leaf, QPainter &painter)
     QTime current = QTime::currentTime();
     int radius = 50;//外圆半径
 
-    int padsize = 40;//内圆半径
+    int padsize = 35;//内圆半径
 
     int startAngle = 90;
 
     operat_config.battery = current.minute();//为了测试使用
     painter.save();
 
-    QRectF rect(20, 20, radius * 2, radius * 2);
+
+    QRectF rect(RING_POS_X, RING_POS_Y, radius * 2, radius * 2);
 
     double angleAll = 360.0;
     double angleCurrent = angleAll * operat_config.battery / 100;
@@ -533,7 +610,7 @@ void ManagerMenu::battery_ring_page(MenuItem_Typedef *leaf, QPainter &painter)
     painter.setBrush(bgcolor);
     painter.drawPie(rect, (startAngle - angleCurrent - angleOther) * 16, angleOther * 16);
 
-    painter.drawEllipse(QRectF(20+radius-padsize,20+radius-padsize,padsize*2,padsize*2));
+    painter.drawEllipse(QRectF(RING_POS_X+radius-padsize,RING_POS_Y+radius-padsize,padsize*2,padsize*2));
 
 
 
@@ -545,7 +622,7 @@ void ManagerMenu::battery_ring_page(MenuItem_Typedef *leaf, QPainter &painter)
     font.setPixelSize(25);
     painter.setFont(font);
 
-    QRectF textRect(20+radius-padsize,20+radius-padsize,padsize*2,padsize*2);
+    QRectF textRect(RING_POS_X+radius-padsize,RING_POS_Y+radius-padsize,padsize*2,padsize*2);
     QString strValue = QString("%1%").arg(operat_config.battery);
 
     painter.drawText(textRect, Qt::AlignCenter, strValue);

@@ -42,7 +42,7 @@ typedef struct iconInfo
 }iconInfo_Typedef;
 typedef struct MenuItem
 {
-    u8_t unitType;          //该菜单节点的信息
+    u16_t unitType;          //该菜单节点的信息
 
     s8_t selectNum;         //选中的条目序号
     s8_t cursorPos;         //光标位置
@@ -58,13 +58,14 @@ typedef struct MenuItem
         show_leaf_page  endPageDeal;    //包括 显示静态/动态页面和全局配置修改后调用上一次刷新配置页面
         modify_config   updataConfig;
     };
+    void *param;//外部地址修改参数
 }MenuItem_Typedef;
 
 
 
-#define LEAF_TYPE_BIT   (6)
-#define LEAF_MUTLI_BIT  (5)
-#define LEAF_STATE_BIT  (4)
+#define LEAF_TYPE_BIT   (14)
+#define LEAF_MUTLI_BIT  (13)
+#define LEAF_STATE_BIT  (12)
 
 
 #define LEAF_INIT_STATE     (1 << LEAF_STATE_BIT)
@@ -79,14 +80,36 @@ typedef struct MenuItem
  * 0叶子/1非叶子  1展开/0不能展开    1多选/0单选  默认状态1开/0关
 */
 
+enum UNIT_BIT_STATUS {
+    UNIT_NONE = 0x0,
+    UNIT_NON_LEAF = 0x8000,
+    UNIT_UNFOLD = 0x4000,
+    UNIT_MULTI_EN = 0x2000,
+    UNIT_SWITCH_ON = 0x1000,
+    UNIT_EDIT_EN = 0x0800,
+    UNIT_REFRESH_EN = 0x0400,
+};
+
 typedef enum {
-    NON_LEAF = 0x80,//非叶子节点
-    LEAF_OPEN = 0x40 ,//可以展开的叶子节点，静态显示
-    LEAF_OPEN_DYN = 0x41,//可以展开的叶子节点，动态显示
-    LEAF_CLOSE_MULTI_DISEN = 0x20,//不能展开的叶子节点, 支持多选, 默认状态是关
-    LEAF_CLOSE_MULTI_EN = 0x30,//不能展开的叶子节点, 支持多选, 默认状态是开
-    LEAF_CLOSE_NOMULTI_DISEN = 0,//不能展开的叶子节点, 不支持多选, 默认状态是关
-    LEAF_CLOSE_NOMULTI_EN   = 0x10,//不能展开的叶子节点, 不支持多选, 默认状态是开
+    NON_LEAF = UNIT_NON_LEAF,//非叶子节点
+
+    NON_LEAF_EDIT = UNIT_NON_LEAF|UNIT_EDIT_EN,//非叶子节点可编辑页面
+
+    LEAF_OPEN_STATIC = UNIT_UNFOLD ,//可以展开的叶子节点,静态显示
+
+    LEAF_OPEN_REFRESH = UNIT_UNFOLD|UNIT_REFRESH_EN,//需要动态刷新的可以展开的叶子节点
+
+    LEAF_OPEN_EDIT_REFRESH = UNIT_UNFOLD|UNIT_EDIT_EN|UNIT_REFRESH_EN,//可以进行编辑可以展开需要实时刷新的叶子节点
+
+    LEAF_CLOSE_MULTI_OFF = UNIT_MULTI_EN,//不能展开的叶子节点, 支持多选, 默认状态是关
+
+    LEAF_CLOSE_MULTI_ON = UNIT_MULTI_EN|UNIT_SWITCH_ON,//不能展开的叶子节点, 支持多选, 默认状态是开
+
+    LEAF_CLOSE_OFF = UNIT_NONE,//不能展开的叶子节点, 不支持多选, 默认状态是关
+
+    LEAF_CLOSE_ON   = UNIT_SWITCH_ON,//不能展开的叶子节点, 不支持多选, 默认状态是开
+
+    LEAF_CLOSE_EDIT = UNIT_EDIT_EN|UNIT_REFRESH_EN,
 }NODE_TYPE;
 
 enum{
@@ -102,7 +125,7 @@ enum{
 
 typedef struct curHandle
 {
-    u8_t cur_type;
+    u16_t cur_type;
     u8_t chosse_cnt;
     u8_t show_cnt;//显示的目数
     u8_t need_refresh;//是否需要刷屏
@@ -110,13 +133,15 @@ typedef struct curHandle
     s8_t cur_choose;
     s8_t startItem;//顶叶序号
     s8_t cursorPos;//光标位置
+
+    u8_t edit_mode;
     
     struct single_list_head *cur_list_head;//指向菜单的头节点
 }curHandle_Typedef;
 
 
 
-static inline u8_t __get_node_type(u8_t multi)
+static inline u8_t __get_node_type(u16_t multi)
 {
     return (multi>>LEAF_TYPE_BIT)&3;
 };

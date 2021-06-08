@@ -32,6 +32,8 @@ void Widget::ViewInit()
     setFixedSize(WIN_WIDTH,WIN_HEIGHT);
     setWindowTitle(WIN_TITLE);
 
+    mainMenu.configSetInit(&mainMenu.operat_config);
+
     view_Timer.setInterval(FRESH_INTERVAL);
 }
 
@@ -97,8 +99,12 @@ void Widget::keyPressEvent(QKeyEvent *event)
     case Qt::Key_Up:
         if(__get_node_type(mainMenu.menuHandle.cur_type) == NON_LEAF_SIGN)
         {
-            mainMenu.chooseCursorUp(&mainMenu.menuHandle);
-            mainMenu.menuHandle.need_refresh = 1;
+            if(mainMenu.menuHandle.edit_mode){//处于可编辑模式
+                mainMenu.updata_Binding_param(&mainMenu.menuHandle,1);
+            }else{
+                mainMenu.chooseCursorUp(&mainMenu.menuHandle);
+                mainMenu.menuHandle.need_refresh = 1;
+            }
         }
 
         qDebug()<< "Up";
@@ -106,14 +112,23 @@ void Widget::keyPressEvent(QKeyEvent *event)
     case Qt::Key_Down:
         if(__get_node_type(mainMenu.menuHandle.cur_type) == NON_LEAF_SIGN)
         {
-            mainMenu.chooseCursorDown(&mainMenu.menuHandle);
-            mainMenu.menuHandle.need_refresh = 1;
-
+            if(mainMenu.menuHandle.edit_mode){//处于可编辑模式
+                mainMenu.updata_Binding_param(&mainMenu.menuHandle,0);
+            }else{
+                mainMenu.chooseCursorDown(&mainMenu.menuHandle);
+                mainMenu.menuHandle.need_refresh = 1;
+            }
         }
         qDebug()<<"Down";
         break;
     case Qt::Key_Left:
-        mainMenu.enterExit_to_newPage(&mainMenu.menuHandle,RETURN_PAGE);
+        if(mainMenu.menuHandle.edit_mode){
+            mainMenu.menuHandle.edit_mode = 0;
+            mainMenu.menuHandle.need_refresh = 1;
+        }else{
+            mainMenu.enterExit_to_newPage(&mainMenu.menuHandle,RETURN_PAGE);
+        }
+
         qDebug()<<"left";
         break;
     case Qt::Key_Right:
@@ -121,7 +136,14 @@ void Widget::keyPressEvent(QKeyEvent *event)
         qDebug()<<"right";
         break;
     case Qt::Key_Return:
-        mainMenu.select_verify_deal(&mainMenu.menuHandle);
+
+        if(mainMenu.menuHandle.cur_type != NON_LEAF_EDIT){
+            mainMenu.select_verify_deal(&mainMenu.menuHandle);
+        }else{
+            //进入编辑模式
+            mainMenu.menuHandle.edit_mode = 1;
+            mainMenu.menuHandle.need_refresh = 1;
+        }
         qDebug()<<"enter";
         break;
 

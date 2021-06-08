@@ -9,5 +9,6 @@
         <file>image/timer.png</file>
         <file>image/arrow_down.png</file>
         <file>image/arrow_up.png</file>
+        <file>image/pid.png</file>
     </qresource>
 </RCC>

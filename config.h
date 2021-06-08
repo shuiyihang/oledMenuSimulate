@@ -37,5 +37,10 @@
 #define LOGO_ARROW_UP   ":/image/arrow_up.png"
 #define LOGO_ARROW_DOWN ":/image/arrow_down.png"
 
+#define LOGO_PID        ":/image/pid.png"
+
+#define RING_POS_X      40
+#define RING_POS_Y      50
+
 
 #endif // CONFIG_H
